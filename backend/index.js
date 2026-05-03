@@ -6,31 +6,34 @@ import authRouter from "./routes/auth.routes.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.routes.js";
-import geminiResponse from "./gemini.js";
+
 
 const app=express()
 app.use(cors({
-    origin:"https://virtual-assistant-tijz.onrender.com",
+    origin: process.env.CLIENT_URL || "https://virtual-assistant-tijz.onrender.com",
     credentials:true,
 }))
 const port=process.env.PORT || 5000
 app.use(express.json())
 app.use(cookieParser())
 
-app.use((req, res, next) => {
-  res.setHeader(
-    "Content-Security-Policy",
-    "default-src * 'unsafe-inline' 'unsafe-eval'; connect-src *; img-src * data: blob:; style-src * 'unsafe-inline';"
-  );
-  next();
-})
+
 
 app.use("/api/auth",authRouter)
 app.use("/api/user",userRouter)
 
 
 
-app.listen(port,()=>{
-    connectDB()
-    console.log("server started")
-})
+const startServer = async () => {
+    try {
+        await connectDB()
+        app.listen(port, () => {
+            console.log(`server started on port ${port}`)
+        })
+    } catch (error) {
+        console.error("Failed to connect to DB, server not started:", error.message)
+        process.exit(1)
+    }
+}
+
+startServer()

@@ -12,18 +12,12 @@ const UserContext = ({children}) => {
 
     const handleCurrentUser=async()=>{
         try {
-
-            if (!document.cookie.includes("token")) {
-                console.log("No token cookie found, skipping fetch.");
-                setLoadingUser(false)
-                return;
-            }
-
             const result=await axios.get(`${serverUrl}/api/user/current`,{withCredentials:true})
             setUserData(result.data)
             console.log(result.data)
         } catch (error) {
-            console.log(error)
+            console.log("Not authenticated or error:", error.message)
+            setUserData(null)
         } finally {
             setLoadingUser(false)
         }

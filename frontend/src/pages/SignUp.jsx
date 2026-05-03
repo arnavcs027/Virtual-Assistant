@@ -24,14 +24,14 @@ function SignUp() {
       let result=await axios.post(`${serverUrl}/api/auth/signup`,{
         name,email,password
       },{withCredentials:true})
-      setUserData(result.data)
+      setUserData(result.data.user)
       setLoading(false)
       navigate("/customize")
     } catch (error) {
       console.log(error)
       setUserData(null)
       setLoading(false)
-      setErr(error.response.data.message)
+      setErr(error.response?.data?.message || "Something went wrong")
     }
   }
 

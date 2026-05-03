@@ -1,7 +1,7 @@
 import User from "../models/user.model.js"
 import uploadOnCloudinary from "../config/cloudinary.js"
 import geminiResponse from "../gemini.js"
-import { response } from "express"
+
 import moment from "moment"
 
 export const getCurrentUser=async(req,res)=>{
@@ -44,7 +44,10 @@ export const askToAssistant=async(req,res)=>{
         const {command}=req.body
         const user=await User.findById(req.userId);
         user.history.push(command)
-        user.save()
+        if (user.history.length > 100) {
+            user.history = user.history.slice(-100)
+        }
+        await user.save()
         const userName=user.name
         const assistantName=user.assistantName
         const result=await geminiResponse(command,assistantName,userName)

@@ -15,7 +15,8 @@ const uploadOnCloudinary=async(filePath)=>{
         return uploadResult.secure_url
     } catch (error) {
         fs.unlinkSync(filePath)
-        return res.status(500).json({message:"cloudinary error"})
+        console.log("Cloudinary upload error:", error.message)
+        throw new Error("Failed to upload image to Cloudinary")
     }
 }
 

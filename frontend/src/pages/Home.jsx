@@ -116,8 +116,14 @@ const Home = () => {
 
     const SpeechRecognition=window.SpeechRecognition || window.webkitSpeechRecognition
 
+    if (!SpeechRecognition) {
+      console.error("SpeechRecognition is not supported in this browser.");
+      setAiText("Speech recognition is not supported in your browser. Please use Chrome.")
+      return () => {};
+    }
+
     const recognition=new SpeechRecognition()
-    recognition.continuous=true,
+    recognition.continuous=true;
     recognition.lang='en-US'
     recognition.interimResults=false;
 
@@ -192,6 +198,12 @@ const Home = () => {
         setListening(false)
         const data=await getGeminiResponse(transcript)
         console.log(data)
+        if (!data) {
+          setAiText("Sorry, something went wrong.")
+          speak("Sorry, something went wrong.")
+          setUserText("")
+          return
+        }
         handleCommand(data)
         setAiText(data.response)
         setUserText("")
@@ -208,6 +220,7 @@ const Home = () => {
       isMounted=false;
       clearTimeout(startTimeout);
       recognition.stop();
+      synth.cancel();
       setListening(false);
       isRecognizingRef.current=false;
     }
@@ -216,10 +229,12 @@ const Home = () => {
 
   return (
     <div className='w-full h-[100vh] bg-gradient-to-t from-[black] to-[#02023d] flex justify-center items-center flex-col gap-[15px] overflow-hidden'>
-      <button className='min-w-[150px] h-[60px] mt-[30px] bg-white rounded-full text-black font-semibold text-[19px] cursor-pointer absolute top-[20px] right-[20px]' onClick={handleLogOut}>Log Out</button>
-      <button className='min-w-[150px] h-[60px] mt-[120px] bg-white rounded-full text-black font-semibold text-[19px] px-[20px] py-[10px] cursor-pointer absolute top-[20px] right-[20px] px-[20px] py-[10px]' onClick={()=>navigate("/customize")}>Customize your Assistant</button>
+      <div className='hidden lg:flex absolute top-[20px] right-[20px] gap-[10px]'>
+        <button className='min-w-[150px] h-[50px] bg-white rounded-full text-black font-semibold text-[17px] px-[20px] cursor-pointer' onClick={()=>navigate("/customize")}>Customize</button>
+        <button className='min-w-[120px] h-[50px] bg-white rounded-full text-black font-semibold text-[17px] px-[20px] cursor-pointer' onClick={handleLogOut}>Log Out</button>
+      </div>
       <CgMenuRight className='lg:hidden text-white absolute top-[20px] right-[20px] w-[25px] h-[25px]' onClick={()=>setHam(true)}/>
-      <div className={`absolute lg:hidden top-0 w-full h-full bg-[#00000053] backdrop-blur-lg p-[20px] flex-col-gap[20px] items-start ${ham?"translate-x-0":"translate-x-full"} transition-transform`}>
+      <div className={`absolute lg:hidden top-0 w-full h-full bg-[#00000053] backdrop-blur-lg p-[20px] flex flex-col gap-[20px] items-start ${ham?"translate-x-0":"translate-x-full"} transition-transform`}>
         <RxCross1 className='text-white absolute top-[20px] right-[20px] w-[25px] h-[25px]' onClick={()=>setHam(false)}/>
         <button className='min-w-[150px] h-[60px] bg-white rounded-full text-black font-semibold text-[19px] cursor-pointer' onClick={handleLogOut}>Log Out</button>
         <button className='min-w-[150px] h-[60px] bg-white rounded-full text-black font-semibold text-[19px] px-[20px] py-[10px] cursor-pointer' onClick={()=>navigate("/customize")}>Customize your Assistant</button>
@@ -228,8 +243,8 @@ const Home = () => {
       <h1 className='text-white font-semibold text-[19px]'>History</h1>
       
       <div className='w-full h-[400px] gap-[20px] overflow-y-auto flex-col'>
-        {userData.history?.map((his)=>(
-          <span className='text-gray-200 text-[18px] truncate'>{his}</span>
+        {userData.history?.map((his, index)=>(
+          <span key={index} className='text-gray-200 text-[18px] truncate'>{his}</span>
         ))}
       </div>
 

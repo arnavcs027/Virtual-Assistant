@@ -30,7 +30,7 @@ function SignIn() {
       console.log(error)
       setUserData(null)
       setLoading(false)
-      setErr(error.response.data.message)
+      setErr(error.response?.data?.message || "Something went wrong")
     }
   }
 
